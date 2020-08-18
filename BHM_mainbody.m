@@ -36,15 +36,29 @@ clear;
 FS = filesep;
 
 % NOTE : here you need to define the path to your files' location:   
-MAIN = 'C:\Users\hjord\Documents\Sumarvinna-2020-HI\ProjectCode\BHM2020_OpenSource'; 
+MAIN = 'C:\Users\hjord\Documents\Sumarvinna-2020-HI\ProjectCode\sandbox'; 
 DAT  = '\Data';
-load ([MAIN FS DAT FS 'PGA_Obs']);  % Ground motion amplitudes (M)
-load ([MAIN FS DAT FS 'dij']);      % Inter-station distance (M)
-load ([MAIN FS DAT FS 'BAz']);      % Back-azimuth i.e. direction (M)
-load ([MAIN FS DAT FS 'M']);        % Local magnitude (V)
-load ([MAIN FS DAT FS 'Depth']);    % Depth (V)
-load ([MAIN FS DAT FS 'R_HYP']);    % Hypocentral distance (M)
-load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (M)
+
+% % If your input data is saved in .m files use:
+% load ([MAIN FS DAT FS 'PGA_Obs']);  % Ground motion amplitudes (M)
+% load ([MAIN FS DAT FS 'dij']);      % Inter-station distance (M)
+% load ([MAIN FS DAT FS 'BAz']);      % Back-azimuth i.e. direction (M)
+% load ([MAIN FS DAT FS 'M']);        % Local magnitude (V)
+% load ([MAIN FS DAT FS 'Depth']);    % Depth (V)
+% load ([MAIN FS DAT FS 'R_HYP']);    % Hypocentral distance (M)
+% load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (M)
+
+% If your input data is saved in .txt, .dat, or .csv, .xls, .xlsb, .xlsm,
+% .xlsx, .xltm, .xltx, or .ods files use:
+
+PGA_Obs = readmatrix([MAIN FS DAT FS 'PGA_Obs.xlsx']);  % Ground motion amplitudes (M)
+dij = readmatrix ([MAIN FS DAT FS 'dij.xlsx']);      % Inter-station distance (M)
+BAz = readmatrix ([MAIN FS DAT FS 'BAz.xlsx']);      % Back-azimuth i.e. direction (M)
+M = readmatrix ([MAIN FS DAT FS 'M.xlsx']);        % Local magnitude (V)
+Depth = readmatrix ([MAIN FS DAT FS 'Depth.xlsx']);    % Depth (V)
+R_HYP = readmatrix ([MAIN FS DAT FS 'R_HYP.xlsx']);    % Hypocentral distance (M)
+R_EPI = readmatrix ([MAIN FS DAT FS 'R_EPI.xlsx']);    % Epicentral distance (M)
+
 
 %% DEFINE SOME GRAPHICS PARAMETERS 
 FigPath = [MAIN FS 'Figs'];
@@ -128,7 +142,7 @@ msx_a = log([ 0.01  0.01  0.01  0.100  0.01  0.01 ]);
 msx_b = log([ 0.99  0.99  0.99  5.00   0.99  0.99 ]);
 Ngen = 1000; %  
 Nbest = 50;  % closest values to the mode 
-Niter = 1;  % itterations of uniform dist.
+Niter = 1;  % iterations of uniform dist.
 Npar =numel(msx_a); 
 % Generating from uniform distirbution 
 thetax = repmat(msx_a,Ngen,1) + ...
@@ -136,7 +150,7 @@ repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar);
 thetax (:,6)=log(0.06);
 % Generating from normal distribution     
 for b=1:Ngen
-    PU(b) = BHM_lnpost_2nd(...
+    PU(b) = BHM_lnpost(...
            thetax(b,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);
 end
 
@@ -161,7 +175,7 @@ while(any(eigen_vals<0))
         % Generating normal dist. from uniform distirbution 
         msx = repmat(msx_m,Ngen,1) + repmat(msx_s,Ngen,1).*randn(Ngen,Npar);
         msx(:,6) = log(0.06);
-        PN = BHM_lnpost_2nd(msx ,lam_theta,Y,W,dij,mu_beta,var_beta,zp);
+        PN = BHM_lnpost(msx ,lam_theta,Y,W,dij,mu_beta,var_beta,zp);
         [~,maxi] = max(PN);
         mode_msx = msx(maxi,:); % MAXIMUM OF P obtained by these three param.
     end
@@ -172,7 +186,7 @@ while(any(eigen_vals<0))
     % mode_theta = [0.05  0.12  0.11  0.25  0.1  0.06 ];  % Mode (determined numerically) 
     
     h = [1 1 1 1 1 1]*0.0001;     % step size numerical Hessian i.e. floating points for all the parameters
-    H = my_hessian(@BHM_lnpost_2nd,mode_theta, h,...       % Hessian Matrix Eq.(6)
+    H = my_hessian(@BHM_lnpost,mode_theta, h,...       % Hessian Matrix Eq.(6)
                     lam_theta,Y,W,dij,mu_beta,var_beta,zp); 
     H = H(1:5,1:5);                  % delta S2S is exclued            
     NPhyp = length(parm_hyp);        % number of hyperparameters 
@@ -229,7 +243,7 @@ parfor c = 1:NC
     LPhyp{c}(1,6) = log(0.06);                       % fix the range parameter of site effect
     Phyp{c}(1,:) = exp(LPhyp{c}(1,:));               % hyperparameters   
     % log posterior p(theta|y)
-    p1 = BHM_lnpost_2nd(LPhyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
+    p1 = BHM_lnpost(LPhyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
     % -------------------- Latent parameters ------------------ % 
     cov_S2S = exp(2*log(Phyp{c}(1,5)))*exp(-dij/exp(log(Phyp{c}(1,6))));   % Eq.(A.8) 
     
@@ -261,7 +275,7 @@ parfor c = 1:NC
     Phyp{c}(a,:)    = exp(LPhyp{c}(a,:));%
 
         % get probability ...
-        p2 = BHM_lnpost_2nd(LPhyp{c}(a,:),lam_theta,Y,W,dij,...
+        p2 = BHM_lnpost(LPhyp{c}(a,:),lam_theta,Y,W,dij,...
                 mu_beta,var_beta,zp); 
         % acceptance or rejection:  Eq.(8) & Eq.(9)
         % REJECT if ...  

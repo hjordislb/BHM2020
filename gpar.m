@@ -190,7 +190,9 @@ acpt_rate=mean(acpt');
 %        varB _ B^2 * 2/(m-1)
     varB=B^(2)*2/(m-1);
 %        covWB _ (n/m)*(cov(s2,xdot^2) - 2*muhat*cov(s2,xdot))
-    covWB=(n/m)*(cov12(s2,xdot.^2)-2*muhat*cov12(s2,xdot));
+    cov_s2_xdot_sqrd = cov(s2,xdot.^2);
+    cov_s2_xdot = cov(s2,xdot);
+    covWB=(n/m)*(cov_s2_xdot_sqrd(1,2)-2*muhat*cov_s2_xdot(1,2));
 %        sig2hat _ ((n-1)*W + B)/n
     sig2hat=((n-1)*W+B)/n;
 %        quantiles _ quantile (as.vector(x), probs=c(.025,.25,.5,.75,.975))
@@ -304,7 +306,11 @@ elseif (max(size(size(r)))==3)
         xdot0(j)=xdot(1,j);
     end
 
-    covWB=(n/m)*(cov12(s20,xdot0.^2)-2*muhat*cov12(s20,xdot0));
+    
+    cov_s20_xdot0_sqrd = cov(s20,xdot0.^2);
+    cov_s20_xdot0 = cov12(s20,xdot0);
+    
+    covWB=(n/m)*(cov_s20_xdot0_sqrd(1,2)-2*muhat*cov_s20_xdot0(1,2));
 
     sig2hat=((n-1)*W+B)/n;
 
