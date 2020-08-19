@@ -132,8 +132,11 @@ The first time you run the project, it is important to find a global mode (that 
 
 Important to know: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. The figure to the left, down below, is an example of results using a global mode. On the figure to the right, the mode is local and does not give the correct results. If your plots look like the latter figure, find another mode and run the rest of the calculations again. (It is possible to alter the number of iterations by changing the NT parameter in the "Gibbs sampler: Setup" section). 
 
-image:
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
+
+Hyperparameter example:
+
+![plots_hpar_50k](https://user-images.githubusercontent.com/39263646/90687955-378c5100-e25d-11ea-827e-5b572fef9d7b.jpg)
+
 
 When a suitable mode has been found, you can save that mode as the parameter mode_theta (First line in the "Gibbs sampler: Setup" section) and comment out the mode-finding part of the program. This is done to save time when running the program again.
 
