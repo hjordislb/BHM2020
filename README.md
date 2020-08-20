@@ -137,17 +137,16 @@ When this is done, you are free to run the whole project.
 
 * Iterations: When the code is downloaded, the number of iterations in the Gibbs sampler will be set to NT=1.000 (in the "Gibbs sampler: Setup" section). This is done to make the testing of the code less time consuming. To acheive acceptable results, this parameter will need to be increased to 10.000-50.000.
 
-* Mode sensitivity: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. Figure 1, down below, is an example of results (after 1000 iterations) using a global mode. In Figure 2 the mode is local and does not give the correct results. If your beta plots look like the latter figure when using NT=1000, i.e. includes a lot of straight lines, find another mode and run the rest of the calculations again.
-
+* Mode sensitivity: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. Figure 1, down below, is an example of results (after 1000 iterations) using a global mode. In Figure 2 the mode is local and will not give the correct results. If your beta plots look like the latter figure when using NT=1000, i.e. includes a lot of straight lines, find another mode and run the rest of the calculations again.
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/39263646/90778821-a1077080-e2ec-11ea-8874-429a7318e08e.jpg" width="600" height="400" />
   <figcaption>Figure 1</figcaption>
+  <img src="https://user-images.githubusercontent.com/39263646/90778821-a1077080-e2ec-11ea-8874-429a7318e08e.jpg" width="600" height="400" />
 </figure>
 
 <figure>
-  <img src="https://user-images.githubusercontent.com/39263646/90778901-bb414e80-e2ec-11ea-9006-c8973e9057e4.jpg" width="600" height="400" />
   <figcaption>Figure 2</figcaption>
+  <img src="https://user-images.githubusercontent.com/39263646/90778901-bb414e80-e2ec-11ea-9006-c8973e9057e4.jpg" width="600" height="400" />
 </figure>
 
 * Saving the mode: When a suitable mode has been found, you can comment out the mode finding section and fix that mode as the parameter "mode_theta" (First line in the "Gibbs sampler: Setup" section). This will save time later when the code is run again.
