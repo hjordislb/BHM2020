@@ -131,20 +131,8 @@ So that Matlab can find the files on your computer, follow these steps:
 
 When this is done, you are free to run the whole project.
 
-### Run
 
-The first time you run the project, it is important to find a global mode (that yields a positive definite "Pcov" matrix) to use as a starting value for the hyperparameters. 
-
-Important to know: 
-
-
-Hyperparameter example:
-
-
-When a suitable mode has been found, you can save that mode as the parameter mode_theta (First line in the "Gibbs sampler: Setup" section) and comment out the mode-finding part of the program. This is done to save time when running the program again.
-
-
-## Things to keep in mind
+### Things to keep in mind
 
 * Iterations: When the code is downloaded, the number of iterations in the Gibbs sampler will be set to NT=1.000 (in the "Gibbs sampler: Setup" section). This is done to make the testing of the code less time consuming. To acheive acceptable results, this parameter will need to be increased to 10.000-50.000.
 * Mode sensitivity: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. The figure to the left, down below, is an example of results using a global mode. On the figure to the right, the mode is local and does not give the correct results. If your plots look like the latter figure, find another mode and run the rest of the calculations again.
