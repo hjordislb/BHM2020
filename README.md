@@ -4,13 +4,12 @@ This model characterizes variations in earthquake ground motion parameters, acco
 
 ## The model
 
-Detailed information about the project and the model can be found in the project's [research article](https://onlinelibrary.wiley.com/doi/epdf/10.1002/env.2497). In this section we provide a summary of the model description and relevant parameters.
+Detailed information about the project and the model can be found in the project's [research article](https://onlinelibrary.wiley.com/doi/epdf/10.1002/env.2497). In this section we provide a short summary of the model description and relevant parameters.
 
 The proposed model: (Equation 1)
 
 <img src="https://render.githubusercontent.com/render/math?math=log_{10}(Y_{es})=log_{10}(\mu_{es})%2B\delta+B_e%2B\delta+S_s%2B\delta+R_{es}"> 
 <img src="https://render.githubusercontent.com/render/math?math=e=1,...,N,+s=1,...,Q">
-
 
 
 with:
@@ -23,7 +22,7 @@ with:
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+WS_{es}\text{: Spatially correlated event-staion effect from event e and station s}">
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+R_{es}\text{: Effects that are unexplained or not accounted for}">
 
-Instead of modelling the peak ground acceleration (PGA), you could replace it with other ground motion parameters instead, like peak ground velocity (PGV).
+Instead of modelling the peak ground acceleration (PGA), you could replace it with other ground motion parameters instead, i.e. peak ground velocity (PGV).
 
 GMM for the median ground motion as a function of local magnitude, hypocentral distance and depth of the origin: (Equation 2)
 
@@ -103,39 +102,43 @@ The output parameters for the model can be found in the repository "mat"
 ### Install/Update Matlab
 
 A few pointers
-* This project was tested and created on Matlab version R2020a (Update 1). If there are problems with the project code, installing the newest version of Matlab might help.
+* This project was tested and created on Matlab version R2020a (Update 1). If there are problems with the project code, installing the newest version of Matlab might help. Testing on Matlab version R2019b was successful.
 * Matlab's Parallel Computing Toolbox is used in the project and therefore has to be installed before running the code (If installing Matlab for the first time, this can be installed simultaneously)
 
 For those who have not installed Matlab yet, follow [these](https://nl.mathworks.com/help/install/) steps to download and run the installer.
+For those who have Matlab installed but do not have the Parallel Computing Toolbox. Follow these steps:
+
+* Open the Home tap in Matlab
+* Press Add-Ons, then Get Add-Ons
+* Search for Parallel Computing Toolbox
+* Open and install it
 
 
 ### Download files
-Second of all, download the whole project repository:
-* Press the green "Code" button in the right top corner of the repository page
+The next step is to download the whole project repository:
+* Press the green "Code" button in the right top corner of the GitHub repository page
 * Press Download ZIP
-
 Extract the ZIP file to a folder at your preferred location.
 
 
-### Insert PATH
+### Insert PATH and run
 
 So that Matlab can find the files on your computer, follow these steps:
 * Open the recently downloaded BHM_mainbody.m
-* In line 38 you can see the variable MAIN = 'C:/Users/...';
+* Right at the start of the file (line 38) you can see the variable MAIN = 'C:/Users/...';
 * Replace this line with the path to the project on your computer, i.e. MAIN='C:/Users/name_of_user/Documents/BHM_earthquake_gm'.
+* Additionally, make sure that your "Current Folder" in Matlab is the project folder as well.
 
-
+When this is done, you are free to run the whole project.
 
 ### Run
 
 The first time you run the project, it is important to find a global mode (that yields a positive definite "Pcov" matrix) to use as a starting value for the hyperparameters. 
 
-Important to know: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. The figure to the left, down below, is an example of results using a global mode. On the figure to the right, the mode is local and does not give the correct results. If your plots look like the latter figure, find another mode and run the rest of the calculations again. (It is possible to alter the number of iterations by changing the NT parameter in the "Gibbs sampler: Setup" section). 
+Important to know: 
 
 
 Hyperparameter example:
-
-![plots_hpar_50k](https://user-images.githubusercontent.com/39263646/90687955-378c5100-e25d-11ea-827e-5b572fef9d7b.jpg)
 
 
 When a suitable mode has been found, you can save that mode as the parameter mode_theta (First line in the "Gibbs sampler: Setup" section) and comment out the mode-finding part of the program. This is done to save time when running the program again.
@@ -143,24 +146,18 @@ When a suitable mode has been found, you can save that mode as the parameter mod
 
 ## Things to keep in mind
 
-* Running section by section:
-  Sometimes it is useful to run the code section by section (Click section and Ctrl+Enter). This can happen i.e. when we have imported the data and found the   mode but would like to test out a different value for NT (nuber of iterations in the Gibbs loop).
-* Mode calculations:
-  The first time you run the project, it is important to find a global mode (that yields a positive definite "Pcov" matrix) to use as a starting value for    the hyperparameters. However, when a suitable mode has been found, you can comment out the mode finding section and save that mode as the parameter         mode_theta (First line in the "Gibbs sampler: Setup" section). This will save time later when the code is run again.
-  
-  Important to know: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the  results. The figure to the left, down below, is an example of results using a global mode. On the figure to the right, the mode is local and does not give the correct results. If your plots look like the latter figure, find another mode and run the rest of the calculations again. (It is possible to alter the number of iterations by changing the NT parameter in the "Gibbs sampler: Setup" section). 
+* Iterations: When the code is downloaded, the number of iterations in the Gibbs sampler will be set to NT=1.000 (in the "Gibbs sampler: Setup" section). This is done to make the testing of the code less time consuming. To acheive acceptable results, this parameter will need to be increased to 10.000-50.000.
+* Mode sensitivity: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. The figure to the left, down below, is an example of results using a global mode. On the figure to the right, the mode is local and does not give the correct results. If your plots look like the latter figure, find another mode and run the rest of the calculations again.
 
+(Nota beta parameters og bara 1000 ítranir frekar)
 
-![Image of Graph](https://www.google.com/search?q=graph&rlz=1C1GCEA_enIS759IS759&sxsrf=ALeKk01doXKqTchh15Wm3r_bzwUl_Z4alg:1597853611672&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjB0bTH1KfrAhUeRBUIHS8sDzIQ_AUoAXoECBcQAw&biw=1280&bih=578&dpr=1.5#imgrc=NVGfzZ8blpyiGM)
- 
-* Changing number of iterations in Gibbs loop:
-  When the project is downloaded, the....
-* Changing step size in convergence diagnostics
-* Changing figure setup to fit your computer
+![plots_hpar_50k](https://user-images.githubusercontent.com/39263646/90687955-378c5100-e25d-11ea-827e-5b572fef9d7b.jpg)
 
-* (Gibbs loop and convergence diagnostics take the longest time)
+* Saving the mode: When a suitable mode has been found, you can comment out the mode finding section and fix that mode as the parameter "mode_theta" (First line in the "Gibbs sampler: Setup" section). This will save time later when the code is run again.
 
+* Plot step size: In the "Convergence diagnostics" section of the code, this is the first line: II = 50:10:NT. The middle part determines the step size in the plots and will determine how time consuming the Convergence diagnostic section will be. When NT=10.000 or more, this could be changed to (i.e.) II = 50:100:NT to save time. 
 
-Now you are free to run the whole file, or run it section by section. If that is desired, click the section you want to run and press Ctrl+enter.
+* In the "Input" section of the main file the data is imported. The testing data is all .m files and therefore the code only loads .m files. Make sure to change the loading part so it is compatible with your file type. Loading of data of the following formats: .txt, .dat, or .csv, .xls, .xlsb, .xlsm, .xlsx, .xltm, .xltx, or .ods, can be found commented below the .m file loading part.
+
 
 
