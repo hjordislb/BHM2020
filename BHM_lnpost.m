@@ -1,4 +1,4 @@
-function p = BHM_lnpost_2nd(theta,lam_theta,Y,W,dij,mu_beta,var_beta,zp)
+function p = BHM_lnpost(theta,lam_theta,Y,W,dij,mu_beta,var_beta,zp)
 
 % This Routine calculate log-posterior of hyper parameters p(theta|y) 
 % for Bayesian Hierarchical Model (BHM) of Ground motion Amplitude 
@@ -59,12 +59,12 @@ K  = size(theta,1);
 
 % hyperparameters
 % Reparametrization using log(\theta) instead of \theta  
-log_phi_R = theta(:,1);   
-log_tau = theta(:,2); 
-log_phi_SS = theta(:,3); 
-log_Del_SS = theta(:,4); 
-log_phi_S2S = theta(:,5); 
-log_Del_S2S = theta(:,6); % Fixed for modeling 
+log_phi_R = log(theta(:,1));   
+log_tau = log(theta(:,2)); 
+log_phi_SS = log(theta(:,3)); 
+log_Del_SS = log(theta(:,4)); 
+log_phi_S2S = log(theta(:,5)); 
+log_Del_S2S = log(theta(:,6)); % Fixed for modeling 
 
 % constant values for prior distribution ~ Eq.(A.12)
 lam_Phi_R = lam_theta(1);
@@ -80,6 +80,9 @@ YWM   =  Y - W * [ mu_beta ; zeros(NT+NS,1)];  % used for (Y-W*MUe)
 cov_beta  = diag(var_beta);    
 
 for a = 1:K
+    if any(theta(a,1:end)<0)
+        p(a) = (-1-1i);
+    else
         % phi_{S2S} (Matern cov. of site terms) Eq.(3) & Eq.(A.8)
         cov_S2S = exp(2*log_phi_S2S(a))*exp(-dij/exp(log_Del_S2S(a)));
         
@@ -111,4 +114,5 @@ for a = 1:K
                + log(lam_Del_SS) - lam_Del_SS*exp(log_Del_SS(a)) + log_Del_SS(a) ...
                + log(lam_tau)    - lam_tau*exp(log_tau(a))       + log_tau(a)    ...
                + log(lam_Phi_S2S) - lam_Phi_S2S*exp(log_phi_S2S(a)) + log_phi_S2S(a); 
+    end
 end

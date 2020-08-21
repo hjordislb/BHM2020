@@ -29,38 +29,42 @@
 %                 variations in earthquake peak ground acceleration within 
 %                 small-aperture arrays, Environmetrics, 29(3), e2497 
 %                                                                       
-%  DATE    : May.2020               VERSION:  5.0      
+%  DATE    : May.2020                    
 %***********************************************************************
-%% INPUT 
+%% ================
+% INPUT: 
+% =================
 clear;
 FS = filesep;
-
-% NOTE : here you need to define the path to your files' location:   
-MAIN = 'C:\Users\hjord\Documents\Sumarvinna-2020-HI\ProjectCode\sandbox'; 
+% NOTE : here you need to define the path to your file locations as below:
+MAIN = 'C:\Users\hjord\Documents\Sumarvinna-2020-HI\ProjectCode\Sahar_Rahpeyma_BHM2020'; %SR 
 DAT  = '\Data';
 
-% % If your input data is saved in .m files use:
-% load ([MAIN FS DAT FS 'PGA_Obs']);  % Ground motion amplitudes (M)
-% load ([MAIN FS DAT FS 'dij']);      % Inter-station distance (M)
-% load ([MAIN FS DAT FS 'BAz']);      % Back-azimuth i.e. direction (M)
-% load ([MAIN FS DAT FS 'M']);        % Local magnitude (V)
-% load ([MAIN FS DAT FS 'Depth']);    % Depth (V)
-% load ([MAIN FS DAT FS 'R_HYP']);    % Hypocentral distance (M)
-% load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (M)
+% If input data is saved in .m files use:
+load ([MAIN FS DAT FS 'PGA_Obs']);  % Ground motion amplitudes (Mat)
+load ([MAIN FS DAT FS 'dij']);      % Inter-station distance (Mat)
+load ([MAIN FS DAT FS 'BAz']);      % Back-azimuth i.e. direction (Mat)
+load ([MAIN FS DAT FS 'M']);        % Local magnitude (Vec)
+load ([MAIN FS DAT FS 'Depth']);    % Depth (Vec)
+load ([MAIN FS DAT FS 'R_HYP']);    % Hypocentral distance (Mat)
+load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (Mat)
+
 
 % If your input data is saved in .txt, .dat, or .csv, .xls, .xlsb, .xlsm,
 % .xlsx, .xltm, .xltx, or .ods files use:
 
-PGA_Obs = readmatrix([MAIN FS DAT FS 'PGA_Obs.xlsx']);  % Ground motion amplitudes (M)
-dij = readmatrix ([MAIN FS DAT FS 'dij.xlsx']);      % Inter-station distance (M)
-BAz = readmatrix ([MAIN FS DAT FS 'BAz.xlsx']);      % Back-azimuth i.e. direction (M)
-M = readmatrix ([MAIN FS DAT FS 'M.xlsx']);        % Local magnitude (V)
-Depth = readmatrix ([MAIN FS DAT FS 'Depth.xlsx']);    % Depth (V)
-R_HYP = readmatrix ([MAIN FS DAT FS 'R_HYP.xlsx']);    % Hypocentral distance (M)
-R_EPI = readmatrix ([MAIN FS DAT FS 'R_EPI.xlsx']);    % Epicentral distance (M)
+% PGA_Obs = readmatrix([MAIN FS DAT FS 'PGA_Obs.xlsx']);  % Ground motion amplitudes (M)
+% dij = readmatrix ([MAIN FS DAT FS 'dij.xlsx']);      % Inter-station distance (M)
+% BAz = readmatrix ([MAIN FS DAT FS 'BAz.xlsx']);      % Back-azimuth i.e. direction (M)
+% M = readmatrix ([MAIN FS DAT FS 'M.xlsx']);        % Local magnitude (V)
+% Depth = readmatrix ([MAIN FS DAT FS 'Depth.xlsx']);    % Depth (V)
+% R_HYP = readmatrix ([MAIN FS DAT FS 'R_HYP.xlsx']);    % Hypocentral distance (M)
+% R_EPI = readmatrix ([MAIN FS DAT FS 'R_EPI.xlsx']);    % Epicentral distance (M)
 
+%% ==================================
+% DEFINE SOME GRAPHICS PARAMETERS: 
+% ===================================
 
-%% DEFINE SOME GRAPHICS PARAMETERS 
 FigPath = [MAIN FS 'Figs'];
 figtype = '-djpeg'; 
 figdpi  = '-r400'; 
@@ -79,8 +83,11 @@ LW  = {'LineWidth',1.2;'LineWidth',1.5;
 LST = {'-'; '--'; ':'};                   
 clr = {'k'; 'r'; 'b'; 'm'; 'c'};          
 UnitNorm = {'Units','Normalized'};         
-%% PREPARE INPUT FOR MODELING BHM
+%% ================================
+%PREPARE INPUT FOR MODELING BHM:
+% =================================
 y=PGA_Obs;
+
 y (y==0)=-9999; % missed data (i.e. stations without records) denoted by -9999
 NS = size(y,2); % sites: 10   (deltaS2S)
 NT = size(y,1); % event: 60   (deltaB) note: selected from original dataset
@@ -116,7 +123,7 @@ ZX(:,3) = log10(Dis);
 ZX(:,4) = DEP;   % ZX matrix is the same as X matrix 
 W = [ZX Z1 Z2];  % Eq.(A.4): W is the same as K matrix in Rahpeyma et al. (2018)
 %% =========================================== %
-% hyperparameters and latent parameters Prior:
+% Hyperparameters and latent parameters Prior:
 % ============================================ % 
 Lam_phi = ceil(sqrt(var(Y)/4)^-1); 
 Delta = 0.7; 
@@ -132,22 +139,24 @@ parm_hyp = {'\phi_R',...
 prior_hyp = repmat({'exppdf'},1,length(lam_theta));
 parm_lat = {'beta','delta B','delta S2S'};
 prior_lat= repmat({'normpdf'},1,3);
-%% =======================================
-% Generalized Hessian matrix: 
-% Hessian matrix is a squarematrix of second-order partial derivatives of a 
-% scalar-valued function
-% ========================================
-% global mode optimization 
-msx_a = log([ 0.01  0.01  0.01  0.100  0.01  0.01 ]);
-msx_b = log([ 0.99  0.99  0.99  5.00   0.99  0.99 ]);
+
+
+  
+
+%% ===================================== %% 
+% Global mode optimization: 
+% ====================================== %
+
+msx_a = [ 0.01  0.01  0.01  0.100  0.01  0.01 ];
+msx_b = [ 0.99  0.99  0.99  1.00   0.99  0.99 ];
 Ngen = 1000; %  
 Nbest = 50;  % closest values to the mode 
-Niter = 1;  % iterations of uniform dist.
+Niter = 1;  % itterations of uniform dist.
 Npar =numel(msx_a); 
 % Generating from uniform distirbution 
 thetax = repmat(msx_a,Ngen,1) + ...
 repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar); 
-thetax (:,6)=log(0.06);
+thetax (:,6)= 0.06;
 % Generating from normal distribution     
 for b=1:Ngen
     PU(b) = BHM_lnpost(...
@@ -161,48 +170,58 @@ best50=Is(end-49:end); % find best (i.e. highest) loglik.values
 msxR  = thetax(Ir,:);
 PU50  = pR(best50);
 msx50 = msxR(best50,:);
-% mean and standard deviation of the best 50 samples 
+%mean and standard deviation of the best 50 samples 
 msx_m = mean(msx50);
 msx_s = std(msx50);
-% based on previous best par., do another iteration (more focused):
-msx_a = msx_m-msx_s;
-msx_b = msx_m+msx_s;     
 
 eigen_vals = [-1,-1,-1,-1,-1];
-
+fprintf('Finding postitive eigenvalues... \n')
 while(any(eigen_vals<0))
     for i=1:Niter
         % Generating normal dist. from uniform distirbution 
-        msx = repmat(msx_m,Ngen,1) + repmat(msx_s,Ngen,1).*randn(Ngen,Npar);
-        msx(:,6) = log(0.06);
+        msx = repmat(msx_m,Ngen,1) + repmat(msx_s,Ngen,1).*abs(randn(Ngen,Npar));
+        msx(:,6) = 0.06;
         PN = BHM_lnpost(msx ,lam_theta,Y,W,dij,mu_beta,var_beta,zp);
         [~,maxi] = max(PN);
         mode_msx = msx(maxi,:); % MAXIMUM OF P obtained by these three param.
     end
-   
-    mode_theta = mode_msx; % it has to be checked
+    mode_theta = mode_msx; % it has to be checked for positive COV
     
-    % If a suitable mode_theta has previously been found, insert it here below:
-    % mode_theta = [0.05  0.12  0.11  0.25  0.1  0.06 ];  % Mode (determined numerically) 
-    
-    h = [1 1 1 1 1 1]*0.0001;     % step size numerical Hessian i.e. floating points for all the parameters
-    H = my_hessian(@BHM_lnpost,mode_theta, h,...       % Hessian Matrix Eq.(6)
+                     
+    h = [1 1 1 1 1 1]*0.0001;     % step size numerical Hessian i.e. 
+
+    H = my_hessian(@BHM_lnpost,mode_theta, h,...       % Generalised hessian Matrix Eq.(6)
                     lam_theta,Y,W,dij,mu_beta,var_beta,zp); 
     H = H(1:5,1:5);                  % delta S2S is exclued            
     NPhyp = length(parm_hyp);        % number of hyperparameters 
     scale = 2.38^2/(NPhyp-1);        % scale parameter 
-    Pcov = -scale*(H\eye(NPhyp-1));  % % covariance of proposal pdf (Roberts et al.,1997) / precision matrix
-    eigen_vals = eig(Pcov) % check Cov matrix (should be positive)
+    Pcov = -scale*(H\eye(NPhyp-1));  % precision matrix (Roberts et al.,1997)
+    eigen_vals = eig(Pcov)           % checking if Pcov is positive definite
 end
 
-% NOTE: As your mode values are approximated you may need to slightly change
-% the mode values to find the positive Covariance matrix   
+%% =======================================
+% Fixing the mode:
+% ========================================
+% When a suitable mode has been found, it
+% can be fixed here as "mode_theta"
+
+mode_theta = mode_theta
+h = [1 1 1 1 1 1]*0.0001;     % step size numerical Hessian
+H = my_hessian(@BHM_lnpost,mode_theta, h,...       % Hessian Matrix Eq.(6)
+                    lam_theta,Y,W,dij,mu_beta,var_beta,zp); 
+H = H(1:5,1:5);                  % delta S2S is exclued            
+NPhyp = length(parm_hyp);        % number of hyperparameters 
+scale = 2.38^2/(NPhyp-1);        % scale parameter 
+Pcov = -scale*(H\eye(NPhyp-1));  % precision matrix (Roberts et al.,1997)
+eigen_vals = eig(Pcov)           % checking if Pcov is positive definite
+
 
 %% =======================================
 % Gibbs sampler: Setup
 % ========================================
 % memory initialization:
-NT = 1000;      % total number of iterations
+
+NT = 1000;      % total number of iterations (For accurate results, try 10.000-50.000)
 NL = 0.75*NT;    % sample size L to be drawn (after burn-in)
 NB = 0.25*NT;    % burn-in samples at beginning 
 NC = 4;          % number of chains to compute
@@ -219,31 +238,35 @@ Plat = cell(NC,1);          % latent parameters
 Plat(:) = {nan(NT,NPlat)};  
 LPhyp = cell(NC,1);         % hyperparameetrs [log-scale]
 LPhyp(:) = {nan(NT,NPhyp)}; 
-% additional constants:        
+% additional constants:
+%scale = 2.38^2/(NPhyp-1);          
+%Pcov  = scale*(-H\eye(NPhyp-1));   % covariance of proposal pdf (Roberts et al.,1997)
 Pchol = chol(Pcov);
 MU_eta = [mu_beta;zeros(NS+Nt,1)]; % latent prior mean
 cov_beta = diag(var_beta);         % latent prior covariance
 IL = eye(NPlat);
 IY = eye(NNZY);
+
 %% =======================================
 % Gibbs sampler loop  (section 3.2 | Posterior inference)
 % =======================================
-% SAVE the posterior Model Parameters 
+% Prepare variables to SAVE the posterior Model Parameters in 
 % sim_hyp: hyper parameters & sim_latent: Latent parameters
-sim_hyp = sprintf('%s\\Mat\\sim_hyper.mat',MAIN);
-sim_lat = sprintf('%s\\Mat\\sim_latent.mat',MAIN);
+sim_hyp = sprintf('%s\\mat\\sim_hyper.mat',MAIN);
+sim_lat = sprintf('%s\\mat\\sim_latent.mat',MAIN);
 
-% How many Loops? (Optional) 
+% How many Loops? (Optional)
 % matlabpool open 4 : Matlab Versions 2007-2014
 parpool(2)        % : Matlab Versions after 2014
-parfor c = 1:NC    
+for c = 1:NC   
+    
     % INITIAL values for all chains and parameters (hyper & latent)
     % -------------------- Hyperparameters -------------------- % 
-    LPhyp{c}(1,1:5) = mvnrnd(mode_theta(1:5), Pcov); % generate the first sample using mode values (in log)
-    LPhyp{c}(1,6) = log(0.06);                       % fix the range parameter of site effect
-    Phyp{c}(1,:) = exp(LPhyp{c}(1,:));               % hyperparameters   
+    Phyp{c}(1,1:5) = mvnrnd(mode_theta(1:5), Pcov); % generate the first sample using mode values (in log)
+    Phyp{c}(1,6) = 0.06;                       % fix the range parameter of site effect
+%     Phyp{c}(1,:) = exp(LPhyp{c}(1,:));               % hyperparameters   
     % log posterior p(theta|y)
-    p1 = BHM_lnpost(LPhyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
+    p1 = BHM_lnpost(Phyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
     % -------------------- Latent parameters ------------------ % 
     cov_S2S = exp(2*log(Phyp{c}(1,5)))*exp(-dij/exp(log(Phyp{c}(1,6))));   % Eq.(A.8) 
     
@@ -270,18 +293,20 @@ parfor c = 1:NC
     % ***************************************************************** %
     for a = 2:NT 
     % -------------------- Hyperparameters -------------------- %  
-    LPhyp{c}(a,1:5) = mvnrnd(LPhyp{c}(a-1,1:5), Pcov);
-    LPhyp{c}(a,6)   = log(0.06);
-    Phyp{c}(a,:)    = exp(LPhyp{c}(a,:));%
+    Phyp{c}(a,1:5) = mvnrnd(Phyp{c}(a-1,1:5), Pcov);
+    Phyp{c}(a,6)   = 0.06;
 
-        % get probability ...
-        p2 = BHM_lnpost(LPhyp{c}(a,:),lam_theta,Y,W,dij,...
-                mu_beta,var_beta,zp); 
-        % acceptance or rejection:  Eq.(8) & Eq.(9)
+%         % get probability ...
+          p2 = BHM_lnpost(Phyp{c}(a,:),lam_theta,Y,W,dij,...
+                mu_beta,var_beta,zp);
+%         % get probability ...
+%         p2 = BHM_lnpost(Phyp{c}(a,:),lam_theta,Y,W,dij,...
+%                 mu_beta,var_beta,zp); 
+%         % acceptance or rejection:  Eq.(8) & Eq.(9)
         % REJECT if ...  
         if rand > exp(p2 - p1) 
             Phyp{c}(a,:) = Phyp{c}(a-1,:);
-            LPhyp{c}(a,:) = LPhyp{c}(a-1,:);
+%             LPhyp{c}(a,:) = LPhyp{c}(a-1,:);
             Plat{c}(a,:) = Plat{c}(a-1,:);
             
         else 
@@ -359,7 +384,7 @@ lat_stat = [mean(sort_lat,1); std(sort_lat,0,1); sort_lat(ii,:)];
 % ********************************** % 
 % Gelman-Rubin and Auto-correlation 
 % ********************************** % 
-II = 50:10:NT; 
+II = 50:100:NT; %could change steps from 10 to 100 (or another value)
 ii = numel(II); 
 R = nan(NPhyp+NPlat,ii); Neff = R; lag1 = R; acptR = R;
 
@@ -428,7 +453,8 @@ end
 %% HYPERPARAMETERS
 close all
 SC = get(0,'ScreenSize');
-fig1 = sr_figr(8.5,6.5,1,SC(4)/3);
+fig1 = figure;
+
 yl=[0 0.10 ;  %\phi_R
     0 0.25 ;  %\tau
     0 0.30 ;  %\phi_SS
@@ -510,7 +536,7 @@ print(figtype , figdpi , spr);
 
 %% LATENT PARAMETERS
 % \Beta
-fig2 = sr_figr(8.5,5,SC(3)/3,SC(4)/3);
+fig2 = figure;
 yl=[0 1.5;0.5 1;-5 -2.0; 0 0.2];
 y0 = 0.80; 
 dy = 0.23; 
@@ -587,7 +613,7 @@ spr = sprintf('%s\\traceplot_Beta.jpg',FigPath);
 print(figtype , figdpi , spr);
 
 %% \delta_S2S
-fig3 = sr_figr(8.5,11,1,1);
+fig3 =  figure;
 y0 = 0.920; 
 dy = 0.091; 
 h  = 0.072;
