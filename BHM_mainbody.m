@@ -37,7 +37,7 @@
 clear;
 FS = filesep;
 % NOTE : here you need to define the path to your file locations as below:
-MAIN = 'C:\Users\hjord\Documents\Sumarvinna-2020-HI\ProjectCode\Sahar_Rahpeyma_BHM2020'; %SR 
+MAIN = 'C:\Users\...'; %SR 
 DAT  = '\Data';
 
 % If input data is saved in .m files use:
@@ -147,45 +147,48 @@ prior_lat= repmat({'normpdf'},1,3);
 % Global mode optimization: 
 % ====================================== %
 
-msx_a = [ 0.01  0.01  0.01  0.100  0.01  0.01 ];
-msx_b = [ 0.99  0.99  0.99  1.00   0.99  0.99 ];
-Ngen = 1000; %  
-Nbest = 50;  % closest values to the mode 
-Niter = 1;  % itterations of uniform dist.
-Npar =numel(msx_a); 
-% Generating from uniform distirbution 
-thetax = repmat(msx_a,Ngen,1) + ...
-repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar); 
-thetax (:,6)= 0.06;
-% Generating from normal distribution     
-for b=1:Ngen
-    PU(b) = BHM_lnpost(...
-           thetax(b,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);
-end
-
-Ir=PU==real(PU);
-pR=PU(Ir);
-[~,Is]=sort(pR);
-best50=Is(end-49:end); % find best (i.e. highest) loglik.values
-msxR  = thetax(Ir,:);
-PU50  = pR(best50);
-msx50 = msxR(best50,:);
-%mean and standard deviation of the best 50 samples 
-msx_m = mean(msx50);
-msx_s = std(msx50);
-
 eigen_vals = [-1,-1,-1,-1,-1];
 fprintf('Finding postitive eigenvalues... \n')
 while(any(eigen_vals<0))
-    for i=1:Niter
-        % Generating normal dist. from uniform distirbution 
-        msx = repmat(msx_m,Ngen,1) + repmat(msx_s,Ngen,1).*abs(randn(Ngen,Npar));
-        msx(:,6) = 0.06;
-        PN = BHM_lnpost(msx ,lam_theta,Y,W,dij,mu_beta,var_beta,zp);
-        [~,maxi] = max(PN);
-        mode_msx = msx(maxi,:); % MAXIMUM OF P obtained by these three param.
+        % global mode optimization 
+    msx_a = [ 0.01  0.01  0.01  0.100  0.01  0.01 ];
+    msx_b = [ 0.20  0.20  0.20  0.50   0.20  0.20 ];
+    Ngen = 1000; %  
+    Nbest = 50;  % closest values to the mode 
+    Niter = 1;  % itterations of uniform dist.
+    Npar =numel(msx_a); 
+    % Generating from uniform distirbution 
+    thetax = repmat(msx_a,Ngen,1) + ...
+    repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar); 
+    thetax (:,6)= 0.06;
+    % Generating from normal distribution     
+    for b=1:Ngen
+        PU(b) = BHM_lnpost(...
+               thetax(b,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);
     end
-    mode_theta = mode_msx; % it has to be checked for positive COV
+    Ir=PU==real(PU);
+    pR=PU(Ir);
+    [~,Is]=sort(pR);
+    best50=Is(end-49:end); % find best (i.e. highest) loglik.values
+    msxR  = thetax(Ir,:);
+    PU50  = pR(best50);
+    msx50 = msxR(best50,:);
+    % mean and standard deviation of the best 50 samples 
+    msx_m = mean(msx50);
+    msx_s = std(msx50);
+    % second round of estimating Mode: 
+    % Generating normal dist. from mean and sd of uniform distirbution 
+    for a=1:5
+        msx(:,a)=randnLimit(msx_m(a)*ones(1,1,50), msx_s(a), msx_a(a), msx_b(a), [1,1,50]);
+    end
+    msx(:,6)=0.06;
+    msx
+    for i=1:Niter
+        PN(i) = BHM_lnpost(msx(i,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);
+    end
+    [~,maxi] = max(PN);
+    mode_msx = msx(maxi,:); % MAXIMUM OF P obtained by these three param.
+    mode_theta = mode_msx % it has to be checked for positive COV
     
                      
     h = [1 1 1 1 1 1]*0.0001;     % step size numerical Hessian i.e. 
@@ -221,7 +224,7 @@ eigen_vals = eig(Pcov)           % checking if Pcov is positive definite
 % ========================================
 % memory initialization:
 
-NT = 1000;      % total number of iterations (For accurate results, try 10.000-50.000)
+NT = 1000;       % total number of iterations (For accurate results, try 10.000-50.000)
 NL = 0.75*NT;    % sample size L to be drawn (after burn-in)
 NB = 0.25*NT;    % burn-in samples at beginning 
 NC = 4;          % number of chains to compute
@@ -384,7 +387,7 @@ lat_stat = [mean(sort_lat,1); std(sort_lat,0,1); sort_lat(ii,:)];
 % ********************************** % 
 % Gelman-Rubin and Auto-correlation 
 % ********************************** % 
-II = 50:100:NT; %could change steps from 10 to 100 (or another value)
+II = 50:10:NT; %could change steps from 10 to 100 (or another value)
 ii = numel(II); 
 R = nan(NPhyp+NPlat,ii); Neff = R; lag1 = R; acptR = R;
 
