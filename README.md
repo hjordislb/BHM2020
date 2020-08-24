@@ -9,25 +9,31 @@ Detailed information about the project and the model can be found in the project
 The proposed model: (Equation 1)
 
 <figure>
-  <img src="https://render.githubusercontent.com/render/math?math=log_{10}(Y_{es})=log_{10}(\mu_{es})%2B\delta+B_e%2B\delta+S_s%2B\delta+R_{es}"> 
+  <img src="https://render.githubusercontent.com/render/math?math=\text{log}+_{10}(Y_{es})=\text{log}_{10}(\mu_{es})%2B\delta+B_e%2B\delta+S_s%2B\delta+WS_{es}%2B\delta+R_{es}"> 
   <img src="https://render.githubusercontent.com/render/math?math=e=1,...,N,+s=1,...,Q">
 </figure>
 
 
 with:
 
-* <img src="https://render.githubusercontent.com/render/math?math=Y_{es}\text{: Peak ground acceleration (PGA)}">
+* N: Maximum number of events
+* Q: Maximum number of stations
+
+and:
+
+* <img src="https://render.githubusercontent.com/render/math?math=Y_{es}\text{: Peak ground acceleration (PGA) recorded for event e and station s}">
 * <img src="https://render.githubusercontent.com/render/math?math=\mu_{es}\text{: Median ground motion}">
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+B_e\text{: Effect from event e}">
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+S_s\text{: Effect from station s}">
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+WS_{es}\text{: Spatially correlated event-staion effect from event e and station s}">
 * <img src="https://render.githubusercontent.com/render/math?math=\delta+R_{es}\text{: Effects that are unexplained or not accounted for}">
 
+
 Instead of modelling the peak ground acceleration (PGA), you could replace it with other ground motion parameters instead, i.e. peak ground velocity (PGV).
 
 To obtain the median ground motion, it is modelled as a function of local magnitude, hypocentral distance and depth of the origin: (Equation 2)
 
-<img src="https://render.githubusercontent.com/render/math?math=log_{10}(\mu_{es})=\beta_1%2B\beta_2+M_e%2B\beta_3+\text{log}_{10}(R_{es})%2B\beta_4+D_e">
+<img src="https://render.githubusercontent.com/render/math?math=\text{log}+_{10}(\mu_{es})=\beta_1%2B\beta_2+M_e%2B\beta_3+\text{log}_{10}(R_{es})%2B\beta_4+D_e">
 
 with:
 
@@ -47,7 +53,7 @@ The repositories:
 
 * Data: Contains all the input parameters
 * Figs: Contains examples of how the figures should look like after 50.000 gibbs-loop iterations
-* mat: Contains saved model parameter outputs (will be overwritten at every run)
+* mat: Contains saved model parameter outputs (will be overwritten after every run)
 
 
 The Matlab files: (Not necessary to know their functionalities in order to run the model)
@@ -57,7 +63,7 @@ The Matlab files: (Not necessary to know their functionalities in order to run t
 * gpar.m: Computes the Gelman-Rubin statistic, the estimated effective sample size, the lag 1 autocorrelatin and the acceptance ratio.
 * my_hessian.m: Computes the hessian matrix from the input mode
 * xcorr.m: Computes cross-correlation function estimates
-
+* randnLimit: Generates random normal values within input interval
 
 
 ### Input parameters
@@ -70,26 +76,23 @@ The input parameters to test the model can be found in the repository "Data"
 * Depth: Depth (<img src="https://render.githubusercontent.com/render/math?math=D_{e}"> in model)
 * R_HYP: Hypocentral distance (<img src="https://render.githubusercontent.com/render/math?math=R_{es}"> in model)
 
-Not used in our analysis:
-* BAz: Back-azimuth i.e. direction
-* R_EPI: Epicentral distance
 
 ### Output parameters
 
 Since our model is a hierarchical model, the output parameters are divided into two parts: hyperparameters and latent parameters.
 
 The hyperparameters are the following:
-* <img src="https://render.githubusercontent.com/render/math?math=\tau">: inner-event std
-* <img src="https://render.githubusercontent.com/render/math?math=\phi_{S2S}">: interstation std
-* <img src="https://render.githubusercontent.com/render/math?math=\phi_{R}">: joint std in error term (unexplained events)
-* <img src="https://render.githubusercontent.com/render/math?math=\phi_{SS}">: event-station std
+* <img src="https://render.githubusercontent.com/render/math?math=\tau">: inter-event variability
+* <img src="https://render.githubusercontent.com/render/math?math=\phi_{S2S}">: inter-station variability
+* <img src="https://render.githubusercontent.com/render/math?math=\phi_{R}">: unexplained variability
+* <img src="https://render.githubusercontent.com/render/math?math=\phi_{SS}">: event-station variability
 * <img src="https://render.githubusercontent.com/render/math?math=\Delta_{SS}">: range parameter (within events)
 * (<img src="https://render.githubusercontent.com/render/math?math=\Delta_{S2S}">: range parameter (station-to-station) - Fixed at 0.06 km) 
 
 The latent parameters are:
-* <img src="https://render.githubusercontent.com/render/math?math=\beta_1,...,\beta_4">, parameters from Equation 2
-* <img src="https://render.githubusercontent.com/render/math?math=\delta+S_1,...,\delta+S_10">, parameters from Equation 1
-* <img src="https://render.githubusercontent.com/render/math?math=\delta+B_1,...,\delta+B_60">, parameters from Equation 1
+* <img src="https://render.githubusercontent.com/render/math?math=\beta_1,...,\beta_4">: ground motion model coefficients
+* <img src="https://render.githubusercontent.com/render/math?math=\delta+S_1,...,\delta+S_10">: site-to-site amplification terms (inter-station residuals) 
+* <img src="https://render.githubusercontent.com/render/math?math=\delta+B_1,...,\delta+B_60">: event terms (inter-event residuals)
 
 The "delta-S" parameters represent the ten stations where the ground motions are measured. The "delta-B" parameters represent the 60 events of ground motion following an earthquake (in this case, within a year of the original earthquake).
 
@@ -105,7 +108,7 @@ The plots will be saved in the repository "Figs" in .m format. All parameters an
 
 ### Install/Update Matlab
 
-* This project was tested and created in Matlab version R2020a (Update 1). If there are problems with the project code, installing the newest version of Matlab might help. Testing on Matlab version R2019b was successful.
+* This project was tested and created in Matlab version R2020a (Update 1). If there are problems with the project code, installing the newest version of Matlab might help. Testing on Matlab version R2019b was also successful.
 * Matlab's Parallel Computing Toolbox is used in the project and therefore has to be installed before running the code (If installing Matlab for the first time, this can be installed simultaneously)
 
 For those who have not installed Matlab yet, follow [these](https://nl.mathworks.com/help/install/) steps to download and run the installer.
@@ -126,9 +129,9 @@ The next step is to download the whole project repository:
 
 ### Insert PATH and run
 
-So that Matlab can find the files on your computer, follow these steps:
+ Follow these steps to make sure that Matlab can find the files on your computer:
 * Open the recently downloaded BHM_mainbody.m
-* Right at the start of the file (line 38) you can see the variable MAIN = 'C:/Users/...';
+* Right at the start of the file (line 40) you can see the variable MAIN = 'C:/Users/...';
 * Replace this line with the path to the project on your computer, i.e. MAIN='C:/Users/name_of_user/Documents/BHM2020'.
 * Additionally, make sure that your "Current Folder" in Matlab is the project folder as well.
 
@@ -153,9 +156,9 @@ When this is done, you are free to run the BHM_mainbody file.
 
 * Saving the mode: When a suitable mode has been found, you can comment out the "Global mode optimization" section and fix that mode as the parameter "mode_theta" (Can be done in the "Fixing the mode" section). This will save time later when the code is run again.
 
-* Plot step size: In the "Convergence diagnostics" section of the code, this is the first line: II = 50:10:NT. The middle part determines the step size in some of the plots, i.e. the Gelman-Rubin plots. It will determine how time consuming the Convergence diagnostic section will be. When NT=10.000 or more, this could be changed to (i.e.) II = 50:100 :NT to save time. 
+* Plot step size: In the "Convergence diagnostics" section of the code, this is the first line: II = 50:10:NT. The middle part determines the step size in some of the plots, i.e. the Gelman-Rubin plots. It will determine how time consuming the "Convergence diagnostics" section will be. When NT=10.000 or more, this could be changed to (i.e.) II = 50:100 :NT to save time. 
 
-* In the "Input" section of the main file the data is imported. The testing data is all .m files and therefore the code only loads .m files. Make sure to change the loading part so it is compatible with your file type. Loading of data of the following formats: .txt, .dat, or .csv, .xls, .xlsb, .xlsm, .xlsx, .xltm, .xltx, or .ods, can be found commented below the .m file loading part.
+* In the "Input" section of the main file the data is imported. The testing data can be found as .m files and .xlsx files but the code is programmed to load .m files. Make sure to change the loading part, if necessary, so it is compatible with your file type. Loading of data of the following formats: .txt, .dat, or .csv, .xls, .xlsb, .xlsm, .xlsx, .xltm, .xltx, or .ods, can be found commented below the .m file loading part.
 
 
 
