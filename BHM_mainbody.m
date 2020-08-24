@@ -37,17 +37,16 @@
 clear;
 FS = filesep;
 % NOTE : here you need to define the path to your file locations as below:
-MAIN = 'C:\Users\...'; %SR 
+MAIN = 'C:\Users\...'; 
 DAT  = '\Data';
 
 % If input data is saved in .m files use:
 load ([MAIN FS DAT FS 'PGA_Obs']);  % Ground motion amplitudes (Mat)
 load ([MAIN FS DAT FS 'dij']);      % Inter-station distance (Mat)
-load ([MAIN FS DAT FS 'BAz']);      % Back-azimuth i.e. direction (Mat)
 load ([MAIN FS DAT FS 'M']);        % Local magnitude (Vec)
 load ([MAIN FS DAT FS 'Depth']);    % Depth (Vec)
 load ([MAIN FS DAT FS 'R_HYP']);    % Hypocentral distance (Mat)
-load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (Mat)
+
 
 
 % If your input data is saved in .txt, .dat, or .csv, .xls, .xlsb, .xlsm,
@@ -55,11 +54,10 @@ load ([MAIN FS DAT FS 'R_EPI']);    % Epicentral distance (Mat)
 
 % PGA_Obs = readmatrix([MAIN FS DAT FS 'PGA_Obs.xlsx']);  % Ground motion amplitudes (M)
 % dij = readmatrix ([MAIN FS DAT FS 'dij.xlsx']);      % Inter-station distance (M)
-% BAz = readmatrix ([MAIN FS DAT FS 'BAz.xlsx']);      % Back-azimuth i.e. direction (M)
 % M = readmatrix ([MAIN FS DAT FS 'M.xlsx']);        % Local magnitude (V)
 % Depth = readmatrix ([MAIN FS DAT FS 'Depth.xlsx']);    % Depth (V)
 % R_HYP = readmatrix ([MAIN FS DAT FS 'R_HYP.xlsx']);    % Hypocentral distance (M)
-% R_EPI = readmatrix ([MAIN FS DAT FS 'R_EPI.xlsx']);    % Epicentral distance (M)
+
 
 %% ==================================
 % DEFINE SOME GRAPHICS PARAMETERS: 
@@ -94,7 +92,6 @@ NT = size(y,1); % event: 60   (deltaB) note: selected from original dataset
 NY = numel(y);  % all data: [10 * 60] = 600 (without missing points)
 Y = reshape(y',NY,1);        % vector: [all_sites(time 1); time 2...]
 Dis = reshape(R_HYP',NY,1);  % Vector of Distance velues
-BA  = reshape(BAz',NY,1);    % Vector of Back-Azimuth values 
 for i=1:NY
     if   Y(i)~= -9999
          Y(i) = log10(Y(i)); 
@@ -118,7 +115,6 @@ Z2 = Z2(zp,:);
 ZX = ZX(zp,:);
 Dis = Dis(zp);
 DEP = DEP(zp);
-BA = BA(zp);
 ZX(:,3) = log10(Dis);
 ZX(:,4) = DEP;   % ZX matrix is the same as X matrix 
 W = [ZX Z1 Z2];  % Eq.(A.4): W is the same as K matrix in Rahpeyma et al. (2018)
@@ -160,7 +156,8 @@ while(any(eigen_vals<0))
     % Generating from uniform distirbution 
     thetax = repmat(msx_a,Ngen,1) + ...
     repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar); 
-    thetax (:,6)= 0.06;
+    %thetax (:,6)= 0.06;
+    thetax (:,6)= 0.6;
     % Generating from normal distribution     
     for b=1:Ngen
         PU(b) = BHM_lnpost(...
@@ -181,7 +178,8 @@ while(any(eigen_vals<0))
     for a=1:5
         msx(:,a)=randnLimit(msx_m(a)*ones(1,1,50), msx_s(a), msx_a(a), msx_b(a), [1,1,50]);
     end
-    msx(:,6)=0.06;
+    %msx(:,6)=0.06;
+    msx(:,6)=0.6;
     msx
     for i=1:Niter
         PN(i) = BHM_lnpost(msx(i,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);
@@ -266,7 +264,8 @@ for c = 1:NC
     % INITIAL values for all chains and parameters (hyper & latent)
     % -------------------- Hyperparameters -------------------- % 
     Phyp{c}(1,1:5) = mvnrnd(mode_theta(1:5), Pcov); % generate the first sample using mode values (in log)
-    Phyp{c}(1,6) = 0.06;                       % fix the range parameter of site effect
+    %Phyp{c}(1,6) = 0.06; 
+    Phyp{c}(1,6) = 0.6; % fix the range parameter of site effect
 %     Phyp{c}(1,:) = exp(LPhyp{c}(1,:));               % hyperparameters   
     % log posterior p(theta|y)
     p1 = BHM_lnpost(Phyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
@@ -297,7 +296,8 @@ for c = 1:NC
     for a = 2:NT 
     % -------------------- Hyperparameters -------------------- %  
     Phyp{c}(a,1:5) = mvnrnd(Phyp{c}(a-1,1:5), Pcov);
-    Phyp{c}(a,6)   = 0.06;
+    %Phyp{c}(a,6)   = 0.06;
+    Phyp{c}(a,6)   = 0.6;
 
 %         % get probability ...
           p2 = BHM_lnpost(Phyp{c}(a,:),lam_theta,Y,W,dij,...
@@ -387,7 +387,7 @@ lat_stat = [mean(sort_lat,1); std(sort_lat,0,1); sort_lat(ii,:)];
 % ********************************** % 
 % Gelman-Rubin and Auto-correlation 
 % ********************************** % 
-II = 50:10:NT; %could change steps from 10 to 100 (or another value)
+II = 50:100:NT; %could change steps from 10 to 100 (or another value)
 ii = numel(II); 
 R = nan(NPhyp+NPlat,ii); Neff = R; lag1 = R; acptR = R;
 
