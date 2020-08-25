@@ -10,7 +10,7 @@ function p = BHM_lnpost(theta,lam_theta,Y,W,dij,mu_beta,var_beta,zp)
 %            Email: sahar@hi.is                                       
 %            Ref: Rahpeyma et al. (2018) 
 %                                                                       
-%  DATE    : May.2020               VERSION:  3.0             
+%  DATE    : May.2020                           
 
 % -------------------------------------------------------------------------
 % INPUT: Y = data column vector 

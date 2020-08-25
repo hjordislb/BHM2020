@@ -1,5 +1,10 @@
 function [upper,neff,lag1_corr,acpt_rate] = gpar(r)
 
+
+% SOME FUNCTIONALITIES OF THE ORIGINAL FUNCTION HAVE BEEN REMOVED
+% ONLY RELEVANT FUNCTIONALITIES FOR THE BHM2020 PROJECT WERE NOT REMOVED
+
+
 % input :
 % r = a n times m matrix mcmc iteration, that is m chains of length n
 
@@ -89,42 +94,6 @@ function [upper,neff,lag1_corr,acpt_rate] = gpar(r)
 
 %############################################################################
 
-% SUBROUTINES
-
-%cov _ function (a,b) {
-%        m _ length(a)
-%        ((mean ((a-mean(a))*(b-mean(b)))) * m)/(m-1)}
-
-%function [cov0]=cov12(a,b)
-%    %m=length(a);
-%    %cov0=((mean((a-mean(a)).*(b-mean(b))))*m)/(m-1);
-%    cov01=cov(a,b);
-%    cov0=cov01(1,2);
-%end
-
-%logit _ function (x) {log(x/(1-x))}
-%invlogit _ function (x) {1/(1+exp(-x))}
-
-%col.means _ function(mat) {
-%        ones _ matrix(1, nrow = 1, ncol = nrow(mat))
-%        ones %*% mat/nrow(mat)}
-%col.vars _ function(mat) {
-%        means _ col.means(mat)
-%        col.means(mat * mat) - means * means}
-%        means=mean(mat)
-%        mean(mat.*mat)-means.*means}
-
-% Chi-squared degrees of freedom estimated by method of moments
-%
-%       (Assume A has a gamma sampling distribution and varA is an unbiased
-%       estimate of the sampling variance of A.)
-
-%function [df1]=chisqdf(A,varA)
-%   df1=2*(A^2/varA);
-%end
-
-%############################################################################
-
 % MAIN PROGRAM
 
 %function [confshrinkrange,postrange,quantiles]=gpar(r)
@@ -173,58 +142,49 @@ acpt_rate=mean(acpt');
 %                                               strong stationarity
 %  quantiles:  emipirical quantiles from last half of simulated sequences
     
-%        xdot _ as.vector(col.means(x))
-%        s2 _ as.vector(col.vars(x))
+
+
     for jj=1:m
         xdot(jj)=mean(x(find(1-isnan(x(:,jj))),jj));  
         s2(jj)=var(x(find(1-isnan(x(:,jj))),jj));  
     end
-%        W _ mean(s2)
+
     W=mean(s2);
-%        B _ n*var(xdot)
+
     B=n*var(xdot);
-%        muhat _ mean(xdot)
+
     muhat=mean(xdot);
-%        varW _ var(s2)/m
+
     varW=var(s2)/m;
-%        varB _ B^2 * 2/(m-1)
+
     varB=B^(2)*2/(m-1);
-%        covWB _ (n/m)*(cov(s2,xdot^2) - 2*muhat*cov(s2,xdot))
+
     cov_s2_xdot_sqrd = cov(s2,xdot.^2);
     cov_s2_xdot = cov(s2,xdot);
     covWB=(n/m)*(cov_s2_xdot_sqrd(1,2)-2*muhat*cov_s2_xdot(1,2));
-%        sig2hat _ ((n-1)*W + B)/n
-    sig2hat=((n-1)*W+B)/n;
-%        quantiles _ quantile (as.vector(x), probs=c(.025,.25,.5,.75,.975))
-         quantiles=prctile(x,100*[0.025,0.25,0.5,0.75,0.975]);      
-%    quantiles=quantile(x,[0.025,0.25,0.5,0.75,0.975]);     
 
-%   if (W > 1.e-8) {            # non-degenerate case
+    sig2hat=((n-1)*W+B)/n;
+
+    quantiles=prctile(x,100*[0.025,0.25,0.5,0.75,0.975]);      
+   
     
     if (W > 1.e-8)   % non-degenerate case
 
-% Posterior interval post.range combines all uncertainties
-% in a t interval with center muhat, scale sqrt(postvar),
-% and postvar.df degrees of freedom.
-%
-%       postvar = sig2hat + B/(mn):  variance for the posterior interval
-%                               The B/(mn) term is there because of the
-%                               sampling variance of muhat.
-%       varpostvar:  estimated sampling variance of postvar
+        % Posterior interval post.range combines all uncertainties
+        % in a t interval with center muhat, scale sqrt(postvar),
+        % and postvar.df degrees of freedom.
+        %
+        %       postvar = sig2hat + B/(mn):  variance for the posterior interval
+        %                               The B/(mn) term is there because of the
+        %                               sampling variance of muhat.
+        %       varpostvar:  estimated sampling variance of postvar
 
-%       postvar _ sig2hat + B/(m*n)
+
         postvar=sig2hat+B/(m*n);
-
-%       varpostvar _
-%                (((n-1)^2)*varW + (1+1/m)^2*varB + 2*(n-1)*(1+1/m)*covWB)/n^2
         varpostvar= ...
         (((n-1)^2)*varW+(1+1/m)^2*varB+2*(n-1)*(1+1/m)*covWB)/n^2;
 
-%       post.df _ chisqdf (postvar, varpostvar)
-%        postdf=chisqdf(postvar,varpostvar);
-         postdf= 2*(postvar^2/varpostvar);
-
-   %       post.range _ muhat + sqrt(postvar)*qt(1-alpha/2, post.df)*c(-1,0,1)
+        postdf= 2*(postvar^2/varpostvar);
         postrange=muhat+sqrt(postvar)*tinv(1-alpha/2,postdf)*[-1,0,1];   
 
 % Estimated potential scale reduction (that would be achieved by
@@ -241,14 +201,9 @@ acpt_rate=mean(acpt');
 % from the approximate chi-squared sampling dists for B and W.  (The
 % F approximation assumes that the sampling dists of B and W are independent;
 % if they are positively correlated, the approximation is conservative.)
-
-%        varlo.df _ chisqdf (W, varW)
-%        varlodf=chisqdf(W,varW);         
+        
          varlodf=2*(W^2/varW);
 
-%        confshrink.range _ sqrt (c(postvar/W,
-%                (n-1)/n + (1+1/m)*(1/n)*(B/W) * qf(.975, m-1, varlo.df)) *
-%                (post.df+3)/(post.df+1))
 
         confshrinkrange=sqrt([postvar/W, ...
                 (n-1)/n+(1+1/m)*(1/n)*(B/W)*finv(0.975,m-1,varlodf)]* ...
@@ -256,12 +211,6 @@ acpt_rate=mean(acpt');
         upper=confshrinkrange(1,2);
         lower=confshrinkrange(1,1);
 
-%   list(post=post.range, quantiles=quantiles, confshrink=confshrink.range)
-%    }
-%   else {  # degenerate case:  all entries in "data matrix" are identical
-%   list (post=muhat*c(1,1,1), quantiles=quantiles, confshrink=c(1,1))
-%    }
-%     }
     end
 elseif (max(size(size(r)))==3)
     alpha=0.05;                     % 95% intervals
@@ -341,36 +290,4 @@ end
 % Compute the effective sample size.
 neff=min(floor(n*m*postvar/B),n*m);
 
-%#############################################################################
-%
-%gpar.log _ function (r) {
-%        gp _ gpar(log(r))
-%        list (post=exp(gp$post), quantiles=exp(gp$quantiles),
-%              confshrink=gp$confshrink)}
-%
-%gpar.logit _ function (r) {
-%        gp _ gpar(logit(r))
-%        list (post=invlogit(gp$post), quantiles=invlogit(gp$quantiles),
-%              confshrink=gp$confshrink)}
-%
-%#############################################################################
-%
-%monitor _ function (a, trans=rep("",
-%        ifelse (length(dim(a))<3, 1, dim(a)[length(dim(a))]))) {
-%
-%# a is a (2n) x m x k matrix:  m sequences of length 2n, k variables measured
-%# trans is a vector of length k:  "" if no transformation, or "log" or "logit"
-%
-%        output _ NULL
-%        nparams _ ifelse (length(dim(a))<3, 1, dim(a)[length(dim(a))])
-%        if (length(dim(a))==2) a _ array (a, c(dim(a),1)) 
-%        for (i in 1:nparams){
-%            if (trans[i]=="log") gp _ gpar.log(a[,,i])
-%            else if (trans[i]=="logit") gp _ gpar.logit(a[,,i])
-%            else gp _ gpar(a[,,i])
-%            output _ rbind (output, c(gp$quantiles, gp$confshrink))
-%        }
-%        dimnames(output) _ list(dimnames(a)[[3]],c("2.5%","25%","50%","75%",
-%            "97.5%","Rhat","Rupper"))
-%        output
-%}
+

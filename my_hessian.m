@@ -25,7 +25,7 @@ function H = my_hessian(func,loc,h,varargin)
 %                 variations in earthquake peak ground acceleration within 
 %                 small-aperture arrays, Environmetrics, 29(3), e2497 
 %                                                                       
-%  DATE    : Nov. 2016               VERSION:  2.0  
+%  DATE    : Nov. 2016               
 % *********************************************************************** %
 
 M = length(loc);

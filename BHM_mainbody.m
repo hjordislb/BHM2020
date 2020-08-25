@@ -29,7 +29,7 @@
 %                 variations in earthquake peak ground acceleration within 
 %                 small-aperture arrays, Environmetrics, 29(3), e2497 
 %                                                                       
-%  DATE    : May.2020                    
+%  DATE    : August.2020                    
 %***********************************************************************
 %% ================
 % INPUT: 
@@ -156,7 +156,6 @@ while(any(eigen_vals<0))
     % Generating from uniform distirbution 
     thetax = repmat(msx_a,Ngen,1) + ...
     repmat(msx_b-msx_a,Ngen,1).*rand(Ngen,Npar); 
-    %thetax (:,6)= 0.06;
     thetax (:,6)= 0.6;
     % Generating from normal distribution     
     for b=1:Ngen
@@ -178,7 +177,6 @@ while(any(eigen_vals<0))
     for a=1:5
         msx(:,a)=randnLimit(msx_m(a)*ones(1,1,50), msx_s(a), msx_a(a), msx_b(a), [1,1,50]);
     end
-    %msx(:,6)=0.06;
     msx(:,6)=0.6;
     msx
     for i=1:Niter
@@ -232,16 +230,13 @@ NPhyp = length(parm_hyp);    % number of hyperparameters
 NBet  = length(mu_beta);     % Beta coefficients (\Beta)
 NPlat = NBet+NS+Nt;          % number of latent parameters 
 % prepare memory for parameters:
-% Phyp = nan(NPhyp,NC,NT); 
 Phyp = cell(NC,1);          % hyperparameters 
 Phyp(:) = {nan(NT,NPhyp)};  
 Plat = cell(NC,1);          % latent parameters
 Plat(:) = {nan(NT,NPlat)};  
 LPhyp = cell(NC,1);         % hyperparameetrs [log-scale]
 LPhyp(:) = {nan(NT,NPhyp)}; 
-% additional constants:
-%scale = 2.38^2/(NPhyp-1);          
-%Pcov  = scale*(-H\eye(NPhyp-1));   % covariance of proposal pdf (Roberts et al.,1997)
+
 Pchol = chol(Pcov);
 MU_eta = [mu_beta;zeros(NS+Nt,1)]; % latent prior mean
 cov_beta = diag(var_beta);         % latent prior covariance
@@ -264,10 +259,8 @@ for c = 1:NC
     % INITIAL values for all chains and parameters (hyper & latent)
     % -------------------- Hyperparameters -------------------- % 
     Phyp{c}(1,1:5) = mvnrnd(mode_theta(1:5), Pcov); % generate the first sample using mode values (in log)
-    %Phyp{c}(1,6) = 0.06; 
     Phyp{c}(1,6) = 0.6; % fix the range parameter of site effect
-%     Phyp{c}(1,:) = exp(LPhyp{c}(1,:));               % hyperparameters   
-    % log posterior p(theta|y)
+
     p1 = BHM_lnpost(Phyp{c}(1,:),lam_theta,Y,W,dij,mu_beta,var_beta,zp);          
     % -------------------- Latent parameters ------------------ % 
     cov_S2S = exp(2*log(Phyp{c}(1,5)))*exp(-dij/exp(log(Phyp{c}(1,6))));   % Eq.(A.8) 
@@ -296,15 +289,12 @@ for c = 1:NC
     for a = 2:NT 
     % -------------------- Hyperparameters -------------------- %  
     Phyp{c}(a,1:5) = mvnrnd(Phyp{c}(a-1,1:5), Pcov);
-    %Phyp{c}(a,6)   = 0.06;
     Phyp{c}(a,6)   = 0.6;
 
 %         % get probability ...
           p2 = BHM_lnpost(Phyp{c}(a,:),lam_theta,Y,W,dij,...
                 mu_beta,var_beta,zp);
-%         % get probability ...
-%         p2 = BHM_lnpost(Phyp{c}(a,:),lam_theta,Y,W,dij,...
-%                 mu_beta,var_beta,zp); 
+
 %         % acceptance or rejection:  Eq.(8) & Eq.(9)
         % REJECT if ...  
         if rand > exp(p2 - p1) 
@@ -387,7 +377,7 @@ lat_stat = [mean(sort_lat,1); std(sort_lat,0,1); sort_lat(ii,:)];
 % ********************************** % 
 % Gelman-Rubin and Auto-correlation 
 % ********************************** % 
-II = 50:100:NT; %could change steps from 10 to 100 (or another value)
+II = 50:100:NT; %could change steps from 100 to 10 for small NT (i.e. NT=s1000)
 ii = numel(II); 
 R = nan(NPhyp+NPlat,ii); Neff = R; lag1 = R; acptR = R;
 
