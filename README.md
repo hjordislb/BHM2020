@@ -156,7 +156,11 @@ When this is done, you are free to run the BHM_mainbody file.
 
 * Saving the mode: When a suitable mode has been found, you can comment out the "Global mode optimization" section and fix that mode as the parameter "mode_theta" (Can be done in the "Fixing the mode" section). This will save time later when the code is run again.
 
-* Plot step size: In the "Convergence diagnostics" section of the code, this is the first line: II = 50:10:NT. The middle part determines the step size in some of the plots, i.e. the Gelman-Rubin plots. It will determine how time consuming the "Convergence diagnostics" section will be. When NT=10.000 or more, this could be changed to (i.e.) II = 50:100 :NT to save time. 
+* Sensitivity analysis: When testing the model on your own data (not the testing data) some parameters might need to be tweaked. In particular: 
+ - NT (Number of iterations in Gibbs-loop)
+ - NC (Number of chains)
+ - DeltaS2S (The range parameter fixed at 0.6 km)
+In the testing data, sensitivity analysis implied that the best results (within reasonable time limits) were found using: NT=10.000, NC=10 and DeltaS2S=0.6. However, these values are not necessarily suitable for other datasets.
 
 * In the "Input" section of the main file the data is imported. The testing data can be found as .m files and .xlsx files but the code is programmed to load .m files. Make sure to change the loading part, if necessary, so it is compatible with your file type. Loading of data of the following formats: .txt, .dat, or .csv, .xls, .xlsb, .xlsm, .xlsx, .xltm, .xltx, or .ods, can be found commented below the .m file loading part.
 
