@@ -142,7 +142,7 @@ When this is done, you are free to run the BHM_mainbody file.
 
 * Fixed values: When the code is downloaded, some variable will have fixed values that the user might want to change, precisely the parameters NT (number of iterations), NC (number of chains) and the DeltaS2S range parameter (presented as thetax(:,6), msx(:,6), Phyp{c}(1,6) and Phyp{c}(a,6) in the code). The original values were chosen so that the code will run fast when testing it for the first time. These original values are: NT=1000, NC=4 and DeltaS2S=0.6. Ideal values for the test data (so the autocorrelation and gelman-rubin statistic are adequate) are: NT=10000, NC=10 and DeltaS2S=0.6. When using your own input data for the model, these parameters might need to be tweaked using sensitivity analysis.
 
-* In the Figs folder you can find examples of plots using the testing data with the fixed values: NT=10000, NC=10 and DeltaS2S=0.6
+* In the Figs folder you can find examples of plots using the testing data with the fixed values: NT=10000, NC=10 and DeltaS2S=0.6.
 
 * Mode sensitivity: The model is sensitive to the mode calculations. Sometimes a local mode is found instead of the global mode, which can alter the results. Figure 1, down below, is an example of results (after 1000 iterations) using a global mode. In Figure 2 the mode is local and will not give the correct results. If your beta plots look like the latter figure when using NT=1000, i.e. includes a lot of straight lines, find another mode and run the rest of the calculations again.
 
